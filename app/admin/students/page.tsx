@@ -1,5 +1,5 @@
 "use client"
 
 export default function(){
-    return (<div> Hello sidak ! </div>)
+    return (<div> Maa chuda! </div>)
 }
