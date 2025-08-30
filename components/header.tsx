@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -55,8 +56,21 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
     admin: "purple",
   }[userType]
 
-  const handleLogout = () => {
-    router.push("/")
+  const handleLogout = async () => {
+    // Clear any client-side data
+    if (typeof window !== 'undefined') {
+      // Clear localStorage
+      localStorage.clear()
+      // Clear sessionStorage
+      sessionStorage.clear()
+      // Disable back button functionality
+      window.history.pushState(null, '', window.location.href)
+    }
+    
+    await signOut({ 
+      callbackUrl: "/login?signout=true",
+      redirect: true 
+    })
   }
 
   return (
