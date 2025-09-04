@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { signIn, getSession, useSession } from "next-auth/react"
+import { signIn, signOut, getSession, useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -110,6 +110,11 @@ export default function LoginPage() {
       }, 500)
     }
   }, [session, status, router, wasLoggedOut])
+
+  useEffect(() => {
+    // Always sign out when visiting the login page
+    signOut({ redirect: false })
+  }, [])
 
   if (status === "loading") {
     return (

@@ -116,7 +116,7 @@ model Prescription {
 
 model Medicine {
   id          String @id @default(cuid())
-  name        String
+  name        String @unique
   category    String
   quantity    Int
   threshold   Int    @default(10)
