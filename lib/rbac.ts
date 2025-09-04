@@ -1,36 +1,46 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "./auth"
 import { NextResponse } from "next/server"
+import { createAuditLog } from "./audit"
 
-export async function withAuth(
-  handler: Function,
-  allowedRoles?: string[]
-) {
-  return async (req: Request, context?: any) => {
-    try {
-      const session = await getServerSession(authOptions)
-      
-      if (!session || !session.user) {
+export function withAuth(allowedRoles?: string[]) {
+  return function(
+    handler: (req: Request, session: any, context?: any) => Promise<Response>
+  ) {
+    return async function(req: Request, context?: any) {
+      try {
+        const session = await getServerSession(authOptions)
+        
+        if (!session || !session.user) {
+          return NextResponse.json(
+            { error: "Unauthorized - Please login" }, 
+            { status: 401 }
+          )
+        }
+        
+        if (allowedRoles && !allowedRoles.includes(session.user.role)) {
+          return NextResponse.json(
+            { error: "Forbidden - Insufficient permissions" }, 
+            { status: 403 }
+          )
+        }
+        
+        // Log the API access
+        await createAuditLog(
+          session.user.id, 
+          `API_ACCESS_${req.method}`, 
+          { url: req.url, role: session.user.role }, 
+          req
+        )
+        
+        return await handler(req, session, context)
+      } catch (error) {
+        console.error("Auth middleware error:", error)
         return NextResponse.json(
-          { error: "Unauthorized - Please login" }, 
-          { status: 401 }
+          { error: "Internal server error" }, 
+          { status: 500 }
         )
       }
-      
-      if (allowedRoles && !allowedRoles.includes(session.user.role)) {
-        return NextResponse.json(
-          { error: "Forbidden - Insufficient permissions" }, 
-          { status: 403 }
-        )
-      }
-      
-      return handler(req, context, session)
-    } catch (error) {
-      console.error("Auth middleware error:", error)
-      return NextResponse.json(
-        { error: "Internal server error" }, 
-        { status: 500 }
-      )
     }
   }
 }

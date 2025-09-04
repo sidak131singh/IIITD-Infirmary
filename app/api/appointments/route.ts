@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/rbac"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 
-export const GET = withAuth(async (req: Request, context: any, session: any) => {
+export const GET = withAuth(["STUDENT", "DOCTOR", "ADMIN"])(async (req: Request, session: any) => {
   try {
     const { searchParams } = new URL(req.url)
     const date = searchParams.get("date")
@@ -85,7 +85,7 @@ export const GET = withAuth(async (req: Request, context: any, session: any) => 
   }
 })
 
-export const POST = withAuth(async (req: Request, context: any, session: any) => {
+export const POST = withAuth(["STUDENT", "ADMIN"])(async (req: Request, session: any) => {
   try {
     const data = await req.json()
     
@@ -201,4 +201,4 @@ export const POST = withAuth(async (req: Request, context: any, session: any) =>
       { status: 500 }
     )
   }
-}, ["STUDENT", "ADMIN"])
+})

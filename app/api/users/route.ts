@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import bcrypt from "bcryptjs"
 
-export const GET = withAuth(async (req: Request, context: any, session: any) => {
+export const GET = withAuth(["ADMIN"])(async (req: Request, session: any) => {
   try {
     const { searchParams } = new URL(req.url)
     const role = searchParams.get("role")
@@ -41,9 +41,9 @@ export const GET = withAuth(async (req: Request, context: any, session: any) => 
       { status: 500 }
     )
   }
-}, ["ADMIN"])
+})
 
-export const POST = withAuth(async (req: Request, context: any, session: any) => {
+export const POST = withAuth(["ADMIN"])(async (req: Request, session: any) => {
   try {
     const data = await req.json()
     
@@ -113,4 +113,4 @@ export const POST = withAuth(async (req: Request, context: any, session: any) =>
       { status: 500 }
     )
   }
-}, ["ADMIN"])
+})
