@@ -231,66 +231,6 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Common administrative tasks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-2">
-                  <Link href="/admin/students">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Users className="mr-2 h-4 w-4" />
-                      Manage Students
-                    </Button>
-                  </Link>
-                  <Link href="/admin/doctors">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Users className="mr-2 h-4 w-4" />
-                      Manage Doctors
-                    </Button>
-                  </Link>
-                  <Link href="/admin/appointments">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      View Appointments
-                    </Button>
-                  </Link>
-                  <Link href="/admin/pharmacy">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Pill className="mr-2 h-4 w-4" />
-                      Manage Pharmacy
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>System Status</CardTitle>
-                <CardDescription>Current system health</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Database</span>
-                    <span className="text-sm text-green-600">✓ Online</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">API Services</span>
-                    <span className="text-sm text-green-600">✓ Running</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Last Backup</span>
-                    <span className="text-sm text-muted-foreground">Today 3:00 AM</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </RoleGuard>

@@ -18,6 +18,14 @@ model User {
   role      Role     @default(STUDENT)
   studentId String?  @unique // Only for students
   phone     String?
+  
+  // Medical Information (primarily for students)
+  height              Float?  // Height in cm
+  weight              Float?  // Weight in kg
+  bloodGroup          String? // Blood group (A+, B+, O+, AB+, A-, B-, O-, AB-)
+  pastMedicalHistory  String? @db.Text // Detailed past medical history
+  currentMedications  String? @db.Text // Current medications being taken
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

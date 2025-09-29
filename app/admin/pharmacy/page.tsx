@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,32 +21,51 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, Plus, Search } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-// Mock data for medications
-const medications = [
-  { id: 1, name: "Paracetamol 500mg", category: "Analgesic", quantity: 5, threshold: 20 },
-  { id: 2, name: "Ibuprofen 400mg", category: "NSAID", quantity: 8, threshold: 20 },
-  { id: 3, name: "Cetirizine 10mg", category: "Antihistamine", quantity: 10, threshold: 15 },
-  { id: 4, name: "Amoxicillin 500mg", category: "Antibiotic", quantity: 15, threshold: 20 },
-  { id: 5, name: "Omeprazole 20mg", category: "Proton Pump Inhibitor", quantity: 18, threshold: 20 },
-  { id: 6, name: "Loratadine 10mg", category: "Antihistamine", quantity: 25, threshold: 15 },
-  { id: 7, name: "Azithromycin 250mg", category: "Antibiotic", quantity: 30, threshold: 20 },
-  { id: 8, name: "Fluticasone Nasal Spray 50mcg", category: "Corticosteroid", quantity: 12, threshold: 10 },
-  { id: 9, name: "Salbutamol Inhaler", category: "Bronchodilator", quantity: 8, threshold: 10 },
-  { id: 10, name: "Metformin 500mg", category: "Antidiabetic", quantity: 40, threshold: 20 },
-  { id: 11, name: "Atorvastatin 10mg", category: "Statin", quantity: 35, threshold: 20 },
-  { id: 12, name: "Losartan 50mg", category: "Antihypertensive", quantity: 28, threshold: 20 },
-]
+interface Medication {
+  id: number
+  name: string
+  category: string
+  quantity: number
+  threshold: number
+}
 
 export default function AdminPharmacy() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [medications, setMedications] = useState<Medication[]>([])
+  const [loading, setLoading] = useState(true)
   const [newMedication, setNewMedication] = useState({
     name: "",
     category: "",
+    dosage: "",
     quantity: "",
     threshold: "",
   })
+
+  // Fetch medications from API
+  useEffect(() => {
+    const fetchMedications = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/admin/pharmacyitems')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data) {
+            setMedications(data.data.medications || [])
+          }
+        } else {
+          console.error('Failed to fetch medications')
+        }
+      } catch (error) {
+        console.error('Error fetching medications:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchMedications()
+  }, [])
 
   const filteredMedications = medications.filter(
     (medication) =>
@@ -56,22 +75,93 @@ export default function AdminPharmacy() {
 
   const lowStockMedications = filteredMedications.filter((medication) => medication.quantity < medication.threshold)
 
-  const handleAddMedication = (e: React.FormEvent) => {
+  const handleAddMedication = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, you would add the medication to the database
-    setIsAddDialogOpen(false)
-    setNewMedication({
-      name: "",
-      category: "",
-      quantity: "",
-      threshold: "",
-    })
-    alert("Medication added successfully!")
+    try {
+      const response = await fetch('/api/admin/pharmacyitems', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newMedication.name,
+          category: newMedication.category,
+          dosage: newMedication.dosage,
+          quantity: parseInt(newMedication.quantity),
+          threshold: parseInt(newMedication.threshold),
+        }),
+      })
+
+      if (response.ok) {
+        // Refresh the medications list
+        const fetchResponse = await fetch('/api/admin/pharmacyitems')
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json()
+          if (data.success && data.data) {
+            setMedications(data.data.medications || [])
+          }
+        }
+        
+        setIsAddDialogOpen(false)
+        setNewMedication({
+          name: "",
+          category: "",
+          dosage: "",
+          quantity: "",
+          threshold: "",
+        })
+        alert("Medication added successfully!")
+      } else {
+        alert("Failed to add medication. Please try again.")
+      }
+    } catch (error) {
+      console.error('Error adding medication:', error)
+      alert("Error adding medication. Please try again.")
+    }
   }
 
-  const handleRestock = (id: number) => {
-    // In a real app, you would update the medication quantity in the database
-    alert(`Medication ${id} restocked.`)
+  const handleRestock = async (id: number) => {
+    const newQuantity = prompt("Enter new quantity:")
+    if (newQuantity && !isNaN(parseInt(newQuantity))) {
+      try {
+        const response = await fetch(`/api/admin/pharmacyitems/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            quantity: parseInt(newQuantity),
+          }),
+        })
+
+        if (response.ok) {
+          // Refresh the medications list
+          const fetchResponse = await fetch('/api/admin/pharmacyitems')
+          if (fetchResponse.ok) {
+            const data = await fetchResponse.json()
+            if (data.success && data.data) {
+              setMedications(data.data.medications || [])
+            }
+          }
+          alert("Medication restocked successfully!")
+        } else {
+          alert("Failed to restock medication. Please try again.")
+        }
+      } catch (error) {
+        console.error('Error restocking medication:', error)
+        alert("Error restocking medication. Please try again.")
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container py-6">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -127,6 +217,16 @@ export default function AdminPharmacy() {
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dosage">Dosage</Label>
+                    <Input
+                      id="dosage"
+                      value={newMedication.dosage}
+                      onChange={(e) => setNewMedication({ ...newMedication, dosage: e.target.value })}
+                      placeholder="e.g., 500mg, 10ml, etc."
+                      required
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

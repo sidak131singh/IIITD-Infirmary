@@ -54,7 +54,12 @@ async function main() {
       password: await bcrypt.hash('student123', 12),
       role: 'STUDENT',
       studentId: '2023001',
-      phone: '+91-9876543213'
+      phone: '+91-9876543213',
+      height: 175.5,
+      weight: 68.2,
+      bloodGroup: 'O+',
+      pastMedicalHistory: 'No significant past medical history. Had chickenpox at age 8. No known allergies.',
+      currentMedications: 'None'
     }
   })
 
@@ -67,7 +72,12 @@ async function main() {
       password: await bcrypt.hash('student123', 12),
       role: 'STUDENT',
       studentId: '2023002',
-      phone: '+91-9876543214'
+      phone: '+91-9876543214',
+      height: 162.0,
+      weight: 55.8,
+      bloodGroup: 'A+',
+      pastMedicalHistory: 'Mild asthma since childhood. Allergic to shellfish. Had appendectomy in 2020.',
+      currentMedications: 'Albuterol inhaler as needed for asthma'
     }
   })
 
