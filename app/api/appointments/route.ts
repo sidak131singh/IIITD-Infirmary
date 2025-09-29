@@ -8,6 +8,7 @@ export const GET = withAuth(["STUDENT", "DOCTOR", "ADMIN"])(async (req: Request,
     const { searchParams } = new URL(req.url)
     const date = searchParams.get("date")
     const status = searchParams.get("status")
+    const doctorId = searchParams.get("doctorId")
     
     let where: any = {}
     
@@ -17,7 +18,12 @@ export const GET = withAuth(["STUDENT", "DOCTOR", "ADMIN"])(async (req: Request,
     } else if (session.user.role === "DOCTOR") {
       where.doctorId = session.user.id
     }
-    // ADMIN can see all appointments
+    // ADMIN can see all appointments or filter by specific doctorId
+    
+    // Allow ADMIN to override doctorId filter
+    if (session.user.role === "ADMIN" && doctorId) {
+      where.doctorId = doctorId
+    }
     
     if (date) {
       const startDate = new Date(date)

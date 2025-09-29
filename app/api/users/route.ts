@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { withAuth } from "@/lib/rbac"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { generateRandomPassword, sendPasswordEmail } from "@/lib/email"
 import bcrypt from "bcryptjs"
 
 export const GET = withAuth(["ADMIN"])(async (req: Request, session: any) => {
@@ -21,12 +22,12 @@ export const GET = withAuth(["ADMIN"])(async (req: Request, session: any) => {
         role: true,
         studentId: true,
         phone: true,
-        // Medical fields (primarily for students)
-        height: true,
-        weight: true,
-        bloodGroup: true,
-        pastMedicalHistory: true,
-        currentMedications: true,
+        // Medical fields (primarily for students) - commented due to Prisma client issues
+        // height: true,
+        // weight: true,
+        // bloodGroup: true,
+        // pastMedicalHistory: true,
+        // currentMedications: true,
         createdAt: true,
         // Don't return password
       },
@@ -53,10 +54,10 @@ export const POST = withAuth(["ADMIN"])(async (req: Request, session: any) => {
   try {
     const data = await req.json()
     
-    // Validate required fields
-    if (!data.email || !data.name || !data.password || !data.role) {
+    // Validate required fields (password is no longer required as it will be generated)
+    if (!data.email || !data.name || !data.role) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields" },
+        { success: false, error: "Missing required fields: email, name, and role" },
         { status: 400 }
       )
     }
@@ -95,8 +96,11 @@ export const POST = withAuth(["ADMIN"])(async (req: Request, session: any) => {
       }
     }
 
+    // Generate a random strong password
+    const generatedPassword = generateRandomPassword(12)
+    
     // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 12)
+    const hashedPassword = await bcrypt.hash(generatedPassword, 12)
     
     // Prepare user data
     const userData: any = {
@@ -141,6 +145,29 @@ export const POST = withAuth(["ADMIN"])(async (req: Request, session: any) => {
       }
     })
     
+    // Send password email to the user
+    try {
+      await sendPasswordEmail(
+        user.email,
+        user.name,
+        user.studentId || user.email, // Use studentId for students, email for others
+        generatedPassword
+      )
+    } catch (emailError) {
+      console.error("Error sending password email:", emailError)
+      // Don't fail the user creation if email fails, but log it
+      await createAuditLog(
+        session.user.id,
+        "EMAIL_SEND_FAILED",
+        {
+          userId: user.id,
+          email: user.email,
+          error: emailError instanceof Error ? emailError.message : "Unknown error"
+        },
+        req
+      )
+    }
+    
     await createAuditLog(
       session.user.id, 
       "CREATE_USER", 
@@ -156,7 +183,7 @@ export const POST = withAuth(["ADMIN"])(async (req: Request, session: any) => {
     return NextResponse.json({
       success: true,
       data: user,
-      message: `${data.role.toLowerCase().charAt(0).toUpperCase() + data.role.toLowerCase().slice(1)} created successfully`
+      message: `${data.role.toLowerCase().charAt(0).toUpperCase() + data.role.toLowerCase().slice(1)} created successfully. Password has been sent to ${user.email}`
     })
   } catch (error) {
     console.error("Error creating user:", error)

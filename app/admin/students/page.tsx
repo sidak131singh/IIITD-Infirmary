@@ -47,7 +47,6 @@ export default function AdminStudentsPage() {
     email: "",
     studentId: "",
     phone: "",
-    password: "",
     height: "",
     weight: "",
     bloodGroup: "",
@@ -73,10 +72,10 @@ export default function AdminStudentsPage() {
     e.preventDefault()
     
     // Required field validation
-    if (!newStudent.name || !newStudent.email || !newStudent.studentId || !newStudent.password) {
+    if (!newStudent.name || !newStudent.email || !newStudent.studentId) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields: Name, Email, Student ID, and Password",
+        description: "Please fill in all required fields: Name, Email, and Student Roll Number",
         variant: "destructive",
       })
       return
@@ -133,7 +132,6 @@ export default function AdminStudentsPage() {
         email: "",
         studentId: "",
         phone: "",
-        password: "",
         height: "",
         weight: "",
         bloodGroup: "",
@@ -349,16 +347,16 @@ export default function AdminStudentsPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input
-                id="password"
-                type="password"
-                value={newStudent.password}
-                onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
-                placeholder="Create a secure password"
-                required
-              />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-blue-700">
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-white text-xs">ℹ</span>
+                </div>
+                <span className="font-medium">Password Information</span>
+              </div>
+              <p className="text-blue-600 text-sm mt-1">
+                A secure password will be automatically generated and sent to the student's email address.
+              </p>
             </div>
 
             <div className="border-t pt-4">

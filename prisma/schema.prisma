@@ -19,6 +19,9 @@ model User {
   studentId String?  @unique // Only for students
   phone     String?
   
+  // Doctor-specific fields
+  isCheckedIn       Boolean? @default(false) // Check-in status for doctors
+  
   // Medical Information (primarily for students)
   height              Float?  // Height in cm
   weight              Float?  // Weight in kg
