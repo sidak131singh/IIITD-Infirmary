@@ -74,7 +74,7 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
   }
 
   return (
-    <header className={`sticky top-0 z-50 w-full border-b bg-${colorScheme}-50`}>
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
           <Sheet>
@@ -84,7 +84,7 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64">
+            <SheetContent side="left" className="w-64 bg-white">
               <div className="flex flex-col gap-6 py-4">
                 <div className="flex items-center gap-2">
                   <Image
@@ -94,17 +94,17 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
                     height={40}
                     className="rounded-md"
                   />
-                  <span className="text-lg font-semibold">IIIT Delhi Infirmary</span>
+                  <span className="text-lg font-semibold text-gray-900">IIIT Delhi Infirmary</span>
                 </div>
                 <nav className="flex flex-col gap-2">
                   {links.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                      className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                         pathname === link.href
-                          ? `bg-${colorScheme}-100 text-${colorScheme}-900`
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-blue-100 text-blue-900 border border-blue-200"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       }`}
                     >
                       {link.icon}
@@ -124,7 +124,7 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
               height={32}
               className="rounded-md"
             />
-            <span className="hidden font-semibold md:inline-block">IIIT Delhi Infirmary</span>
+            <span className="hidden font-semibold text-gray-900 md:inline-block">IIIT Delhi Infirmary</span>
           </Link>
         </div>
 
@@ -133,10 +133,10 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium ${
+              className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 pathname === link.href
-                  ? `bg-${colorScheme}-100 text-${colorScheme}-900`
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-blue-100 text-blue-900 border border-blue-200"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               }`}
             >
               {link.icon}

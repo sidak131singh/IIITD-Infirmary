@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { RoleGuard } from "@/components/auth/RoleGuard"
 import { useToast } from "@/hooks/use-toast"
 import { Users, Search, Calendar, CheckCircle, XCircle, Clock, Eye } from "lucide-react"
@@ -24,27 +23,11 @@ interface Doctor {
   createdAt: string
 }
 
-interface DoctorAppointment {
-  id: string
-  date: string
-  timeSlot: string
-  reason: string
-  status: string
-  student: {
-    name: string
-    studentId: string
-    email: string
-  }
-}
-
 export default function AdminDoctorsPage() {
   const { toast } = useToast()
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
-  const [doctorAppointments, setDoctorAppointments] = useState<DoctorAppointment[]>([])
-  const [appointmentsLoading, setAppointmentsLoading] = useState(false)
 
   const fetchDoctors = async () => {
     try {
@@ -101,26 +84,6 @@ export default function AdminDoctorsPage() {
         description: error.message,
         variant: "destructive",
       })
-    }
-  }
-
-  const fetchDoctorAppointments = async (doctorId: string) => {
-    setAppointmentsLoading(true)
-    try {
-      const response = await fetch(`/api/appointments?doctorId=${doctorId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setDoctorAppointments(data.data || [])
-      }
-    } catch (error) {
-      console.error("Failed to fetch doctor appointments:", error)
-      toast({
-        title: "Error",
-        description: "Failed to fetch doctor's appointments",
-        variant: "destructive",
-      })
-    } finally {
-      setAppointmentsLoading(false)
     }
   }
 
@@ -245,74 +208,14 @@ export default function AdminDoctorsPage() {
                               />
                             </div>
                             <div className="flex gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedDoctor(doctor)
-                                      fetchDoctorAppointments(doctor.id)
-                                    }}
-                                  >
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Appointments
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                                  <DialogHeader>
-                                    <DialogTitle>
-                                      Dr. {selectedDoctor?.name} - Appointments
-                                    </DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    {appointmentsLoading ? (
-                                      <div className="flex justify-center py-8">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                      </div>
-                                    ) : doctorAppointments.length === 0 ? (
-                                      <div className="text-center py-8 text-muted-foreground">
-                                        No appointments found for this doctor.
-                                      </div>
-                                    ) : (
-                                      <div className="space-y-3">
-                                        {doctorAppointments.map((appointment) => (
-                                          <div
-                                            key={appointment.id}
-                                            className="border rounded-lg p-4 hover:bg-gray-50"
-                                          >
-                                            <div className="flex justify-between items-start">
-                                              <div>
-                                                <h4 className="font-medium">
-                                                  {appointment.student.name} ({appointment.student.studentId})
-                                                </h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                  {appointment.student.email}
-                                                </p>
-                                                <p className="text-sm mt-1">
-                                                  <strong>Reason:</strong> {appointment.reason}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                  {formatDate(appointment.date)} at {appointment.timeSlot}
-                                                </p>
-                                              </div>
-                                              <Badge
-                                                variant={
-                                                  appointment.status === "COMPLETED" ? "default" :
-                                                  appointment.status === "CONFIRMED" ? "secondary" :
-                                                  appointment.status === "PENDING" ? "outline" : "destructive"
-                                                }
-                                              >
-                                                {appointment.status}
-                                              </Badge>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => window.location.href = `/admin/doctors/${doctor.id}/appointments`}
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Appointments
+                              </Button>
                               <Button variant="outline" size="sm">
                                 Edit
                               </Button>
