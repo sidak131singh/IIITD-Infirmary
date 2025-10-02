@@ -430,7 +430,7 @@ async function main() {
         medicineId: cetirizine.id,
         dosage: '10mg',
         frequency: 'Once a day',
-        duration: '3 days',
+        duration: '2 days',
         instructions: 'Take before bedtime'
       }
     })
