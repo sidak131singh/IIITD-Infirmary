@@ -40,7 +40,7 @@ async function main() {
       name: 'Dr. Michael Johnson',
       password: await bcrypt.hash('doctor123', 12),
       role: 'DOCTOR',
-      phone: '+91-9876543212'
+      phone: '+91-9876543232'
     }
   })
 
