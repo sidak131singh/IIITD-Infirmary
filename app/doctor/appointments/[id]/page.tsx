@@ -77,6 +77,30 @@ export default function AppointmentDetailsPage() {
   const [appointment, setAppointment] = useState<AppointmentDetails | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+      case 'CONFIRMED':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+      case 'COMPLETED':
+        return 'bg-green-100 text-green-800 hover:bg-green-200'
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800 hover:bg-red-200'
+      default:
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
   useEffect(() => {
     if (params.id && session) {
       fetchAppointmentDetails()
@@ -113,30 +137,6 @@ export default function AppointmentDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'CONFIRMED':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800 border-red-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
   }
 
   if (loading) {
@@ -236,6 +236,28 @@ export default function AppointmentDetailsPage() {
               </CardContent>
             </Card>
 
+            {/* Action Buttons */}
+            {!appointment.prescription && appointment.status !== 'CANCELLED' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Actions</CardTitle>
+                  <CardDescription>
+                    Available actions for this appointment
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-4">
+                    <Link href={`/doctor/prescriptions/new?appointment=${appointment.id}`}>
+                      <Button className="bg-green-600 hover:bg-green-700">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Write Prescription
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Prescription Section */}
             {appointment.prescription ? (
               <Card>
@@ -244,6 +266,9 @@ export default function AppointmentDetailsPage() {
                     <FileText className="h-5 w-5" />
                     Prescription
                   </CardTitle>
+                  <CardDescription>
+                    Prescription details for this appointment
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
