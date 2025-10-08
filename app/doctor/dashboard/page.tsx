@@ -2,36 +2,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, FileText, Users } from "lucide-react"
 import Link from "next/link"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
-// Mock data for today's appointments
-const todaysAppointments = [
-  {
-    id: 1,
-    time: "10:30 AM",
-    student: "John Doe",
-    studentId: "2021001",
-    reason: "Regular Checkup",
-    status: "Upcoming",
-  },
-  {
-    id: 2,
-    time: "11:00 AM",
-    student: "Jane Smith",
-    studentId: "2021002",
-    reason: "Fever",
-    status: "Upcoming",
-  },
-  {
-    id: 3,
-    time: "2:00 PM",
-    student: "Alex Johnson",
-    studentId: "2021003",
-    reason: "Headache",
-    status: "Upcoming",
-  },
-]
+async function getTodaysAppointments(doctorId: string) {
+  const today = new Date()
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
 
-export default function DoctorDashboard() {
+  return await prisma.appointment.findMany({
+    where: {
+      doctorId,
+      date: {
+        gte: startOfDay,
+        lt: endOfDay
+      },
+      status: {
+        in: ['PENDING', 'CONFIRMED']
+      }
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          name: true,
+          studentId: true
+        }
+      }
+    },
+    orderBy: {
+      timeSlot: 'asc'
+    }
+  })
+}
+
+export default async function DoctorDashboard() {
+  const session = await getServerSession(authOptions)
+  
+  if (!session || session.user.role !== 'DOCTOR') {
+    return <div>Access denied</div>
+  }
+
+  const todaysAppointments = await getTodaysAppointments(session.user.id)
+
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -47,66 +61,20 @@ export default function DoctorDashboard() {
           <p className="text-muted-foreground">Here's your schedule for today: {currentDate}</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{todaysAppointments.length}</div>
-              <p className="text-xs text-muted-foreground">Next appointment at 10:30 AM</p>
-              <div className="mt-4">
-                <Link href="/doctor/appointments">
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Schedule
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Prescriptions Written</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">This month</p>
-              <div className="mt-4">
-                <Link href="/doctor/prescriptions">
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Prescriptions
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Students Treated</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">42</div>
-              <p className="text-xs text-muted-foreground">This semester</p>
-              <div className="mt-4">
-                <Link href="/doctor/leave">
-                  <Button variant="outline" size="sm" className="w-full">
-                    Manage Leave
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <Card>
           <CardHeader>
-            <CardTitle>Today's Appointments</CardTitle>
-            <CardDescription>You have {todaysAppointments.length} appointments scheduled for today.</CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle>Today's Appointments</CardTitle>
+                <CardDescription>You have {todaysAppointments.length} appointments scheduled for today.</CardDescription>
+              </div>
+              <Link href="/doctor/appointments">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  View Schedule
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -119,10 +87,10 @@ export default function DoctorDashboard() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                       <div>
                         <h3 className="font-medium">
-                          {appointment.student} (ID: {appointment.studentId})
+                          {appointment.student.name} (ID: {appointment.student.studentId})
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {appointment.time} - {appointment.reason}
+                          {appointment.timeSlot} - {appointment.reason}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -144,46 +112,6 @@ export default function DoctorDashboard() {
             </div>
           </CardContent>
         </Card>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Leave</CardTitle>
-              <CardDescription>Your scheduled time off</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border p-4 text-center">
-                <p className="text-sm text-muted-foreground">You have no upcoming leave scheduled.</p>
-                <Link href="/doctor/leave">
-                  <Button className="mt-4 bg-green-600 hover:bg-green-700">Request Leave</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Infirmary Notices</CardTitle>
-              <CardDescription>Important updates from administration</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="rounded-lg border p-3">
-                  <h3 className="font-medium">Vaccination Drive</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Flu vaccination drive scheduled for next week. Please inform students during consultations.
-                  </p>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <h3 className="font-medium">New Pharmacy Stock</h3>
-                  <p className="text-sm text-muted-foreground">
-                    New medications have been added to the pharmacy inventory. Check the updated list.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )
