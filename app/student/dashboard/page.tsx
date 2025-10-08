@@ -19,38 +19,47 @@ interface Appointment {
   }
 }
 
+interface AppointmentCount {
+  total: number
+  pending: number
+  confirmed: number
+  completed: number
+  cancelled: number
+}
+
 export default function StudentDashboard() {
   const { data: session } = useSession()
-  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null)
+  const [appointmentCount, setAppointmentCount] = useState<AppointmentCount | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await fetch("/api/appointments")
-        if (response.ok) {
-          const data = await response.json()
-          setAppointments(data.data || [])
+        // Fetch next appointment
+        const nextApptResponse = await fetch("/api/student/next-appointment")
+        if (nextApptResponse.ok) {
+          const nextApptData = await nextApptResponse.json()
+          setNextAppointment(nextApptData.data)
+        }
+
+        // Fetch appointment count
+        const countResponse = await fetch("/api/student/appointments/count")
+        if (countResponse.ok) {
+          const countData = await countResponse.json()
+          setAppointmentCount(countData.data)
         }
       } catch (error) {
-        console.error("Failed to fetch appointments:", error)
+        console.error("Failed to fetch dashboard data:", error)
       } finally {
         setLoading(false)
       }
     }
 
     if (session) {
-      fetchAppointments()
+      fetchDashboardData()
     }
   }, [session])
-
-  const upcomingAppointments = appointments.filter(apt => 
-    new Date(apt.date) > new Date() && apt.status !== "CANCELLED"
-  ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-  const recentAppointments = appointments.filter(apt => 
-    new Date(apt.date) <= new Date()
-  ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return (
     <RoleGuard allowedRoles={["STUDENT"]}>
@@ -77,13 +86,13 @@ export default function StudentDashboard() {
                     <div className="h-6 bg-gray-200 rounded mb-2"></div>
                     <div className="h-4 bg-gray-200 rounded"></div>
                   </div>
-                ) : upcomingAppointments.length > 0 ? (
+                ) : nextAppointment ? (
                   <>
                     <div className="text-2xl font-bold">
-                      {new Date(upcomingAppointments[0].date).toLocaleDateString()}
+                      {new Date(nextAppointment.date).toLocaleDateString()}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {upcomingAppointments[0].timeSlot} with {upcomingAppointments[0].doctor.name}
+                      {nextAppointment.timeSlot} with {nextAppointment.doctor.name}
                     </p>
                     <div className="mt-4">
                       <Link href="/student/appointments">
@@ -116,12 +125,21 @@ export default function StudentDashboard() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{appointments.length}</div>
+                <div className="text-2xl font-bold">
+                  {loading ? (
+                    <div className="animate-pulse h-8 bg-gray-200 rounded w-16"></div>
+                  ) : (
+                    appointmentCount?.total || 0
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  {recentAppointments.length > 0 
-                    ? `Last visit: ${new Date(recentAppointments[0].date).toLocaleDateString()}`
-                    : "No previous appointments"
-                  }
+                  {loading ? (
+                    <div className="animate-pulse h-4 bg-gray-200 rounded w-32 mt-1"></div>
+                  ) : appointmentCount ? (
+                    `${appointmentCount.completed} completed, ${appointmentCount.pending} pending`
+                  ) : (
+                    "No appointments yet"
+                  )}
                 </p>
                 <div className="mt-4">
                   <Link href="/student/appointments">
@@ -156,40 +174,6 @@ export default function StudentDashboard() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Health Reminders</CardTitle>
-                <CardDescription>Important health information and reminders</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 rounded-lg border p-3">
-                    <div className="rounded-full bg-blue-100 p-2">
-                      <Calendar className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Annual Health Checkup</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Schedule your annual health checkup to maintain good health.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4 rounded-lg border p-3">
-                    <div className="rounded-full bg-green-100 p-2">
-                      <FileText className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Vaccination Records</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Keep your vaccination records up to date with the infirmary.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Infirmary Hours</CardTitle>

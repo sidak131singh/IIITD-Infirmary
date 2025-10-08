@@ -41,6 +41,7 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
     ],
     admin: [
       { name: "Dashboard", href: "/admin/dashboard", icon: <Home className="h-5 w-5" /> },
+      { name: "Appointments", href: "/admin/appointments", icon: <Calendar className="h-5 w-5" /> },
       { name: "Students", href: "/admin/students", icon: <User className="h-5 w-5" /> },
       { name: "Doctors", href: "/admin/doctors", icon: <User className="h-5 w-5" /> },
       { name: "Pharmacy", href: "/admin/pharmacy", icon: <ClipboardList className="h-5 w-5" /> },

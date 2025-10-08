@@ -303,7 +303,7 @@ export default function DoctorAppointmentsPage() {
               </div>
 
               {/* Appointments List */}
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {filteredAppointments.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     {searchTerm || statusFilter !== "all" 
@@ -314,53 +314,45 @@ export default function DoctorAppointmentsPage() {
                   filteredAppointments.map((appointment) => (
                     <div
                       key={appointment.id}
-                      className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-blue-600" />
-                              <h3 className="font-semibold text-lg">
-                                {appointment.student.name}
-                              </h3>
-                            </div>
-                            <Badge className={getStatusColor(appointment.status)}>
-                              {appointment.status}
-                            </Badge>
+                      <div className="flex items-center justify-between gap-4">
+                        {/* Left side - All appointment info in one line */}
+                        <div className="flex-1 flex flex-wrap items-center gap-x-6 gap-y-2">
+                          {/* Student Name */}
+                          <div className="flex items-center gap-2">
+                            <User className="h-3.5 w-3.5 text-blue-600" />
+                            <span className="font-semibold text-sm">{appointment.student.name}</span>
                           </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <CalendarIcon className="h-4 w-4" />
-                              <span>{formatDate(appointment.date)}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Clock className="h-4 w-4" />
-                              <span>{appointment.timeSlot}</span>
-                            </div>
-                            <div className="text-muted-foreground">
-                              <strong>Student ID:</strong> {appointment.student.studentId}
-                            </div>
-                            <div className="text-muted-foreground">
-                              <strong>Email:</strong> {appointment.student.email}
-                            </div>
+
+                          {/* Student ID / Roll Number */}
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-3.5 w-3.5 text-gray-600" />
+                            <span className="text-sm text-muted-foreground">Roll: {appointment.student.studentId}</span>
                           </div>
-                          
-                          <div className="mt-3">
-                            <p className="text-sm">
-                              <strong className="text-gray-700">Reason:</strong> {appointment.reason}
-                            </p>
-                            {appointment.notes && (
-                              <p className="text-sm mt-1">
-                                <strong className="text-gray-700">Notes:</strong> {appointment.notes}
-                              </p>
-                            )}
+
+                          {/* Date */}
+                          <div className="flex items-center gap-2">
+                            <CalendarIcon className="h-3.5 w-3.5 text-purple-600" />
+                            <span className="text-sm font-medium">
+                              {formatDate(appointment.date)}
+                            </span>
+                          </div>
+
+                          {/* Time */}
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-orange-600" />
+                            <span className="text-sm font-medium">{appointment.timeSlot}</span>
                           </div>
                         </div>
                         
-                        <div className="flex flex-col gap-2 lg:items-end">
-                          {appointment.prescription ? (
+                        {/* Right side - Status and Prescription button */}
+                        <div className="flex items-center gap-3">
+                          <Badge className={getStatusColor(appointment.status)}>
+                            {appointment.status}
+                          </Badge>
+
+                          {appointment.prescription && (
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button 
@@ -368,8 +360,8 @@ export default function DoctorAppointmentsPage() {
                                   onClick={() => setSelectedPrescription(appointment.prescription)}
                                   className="bg-green-600 hover:bg-green-700"
                                 >
-                                  <FileText className="h-4 w-4 mr-2" />
-                                  View Prescription
+                                  <FileText className="h-3.5 w-3.5 mr-1.5" />
+                                  Prescription
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -420,17 +412,7 @@ export default function DoctorAppointmentsPage() {
                                 )}
                               </DialogContent>
                             </Dialog>
-                          ) : (
-                            <Button size="sm" variant="outline" disabled>
-                              <FileText className="h-4 w-4 mr-2" />
-                              No Prescription
-                            </Button>
                           )}
-                          
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
                         </div>
                       </div>
                     </div>
