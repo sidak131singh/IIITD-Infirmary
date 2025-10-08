@@ -21,19 +21,12 @@ export default function DoctorLeave() {
   const [selectedDates, setSelectedDates] = useState<Date[]>([])
   const [reason, setReason] = useState("")
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return
-
-    // Check if date is already selected
-    const isSelected = selectedDates.some((selectedDate) => isSameDay(selectedDate, date))
-
-    if (isSelected) {
-      // Remove date if already selected
-      setSelectedDates(selectedDates.filter((selectedDate) => !isSameDay(selectedDate, date)))
-    } else {
-      // Add date if not selected
-      setSelectedDates([...selectedDates, date])
+  const handleDateSelect = (dates: Date[] | undefined) => {
+    if (!dates) {
+      setSelectedDates([])
+      return
     }
+    setSelectedDates(dates)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,7 +50,7 @@ export default function DoctorLeave() {
           <p className="text-muted-foreground">Request and manage your leave schedule.</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[1.5fr,1fr]">
           <Card>
             <CardHeader>
               <CardTitle>Request Leave</CardTitle>
@@ -67,18 +60,20 @@ export default function DoctorLeave() {
               <CardContent className="space-y-4">
                 <div>
                   <div className="mb-2 text-sm font-medium">Select Date(s)</div>
-                  <Calendar
-                    mode="multiple"
-                    selected={selectedDates}
-                    onSelect={(date) => handleDateSelect(date)}
-                    className="rounded-md border"
-                    disabled={(date) => {
-                      // Disable past dates
-                      const now = new Date()
-                      now.setHours(0, 0, 0, 0)
-                      return date < now
-                    }}
-                  />
+                  <div className="max-w-md mx-auto">
+                    <Calendar
+                      mode="multiple"
+                      selected={selectedDates}
+                      onSelect={handleDateSelect}
+                      className="rounded-md border w-full"
+                      disabled={(date) => {
+                        // Disable past dates
+                        const now = new Date()
+                        now.setHours(0, 0, 0, 0)
+                        return date < now
+                      }}
+                    />
+                  </div>
 
                   {selectedDates.length > 0 && (
                     <div className="mt-4">

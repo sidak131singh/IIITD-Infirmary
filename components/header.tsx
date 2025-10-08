@@ -24,8 +24,8 @@ interface HeaderProps {
 
 export function Header({ userType, userName = "User" }: HeaderProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const [notificationCount, setNotificationCount] = useState(3)
+  // const router = useRouter()
+  // const [notificationCount, setNotificationCount] = useState(3)
 
   const navigationLinks = {
     student: [
@@ -37,7 +37,6 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
     doctor: [
       { name: "Dashboard", href: "/doctor/dashboard", icon: <Home className="h-5 w-5" /> },
       { name: "Appointments", href: "/doctor/appointments", icon: <Calendar className="h-5 w-5" /> },
-      { name: "Prescriptions", href: "/doctor/prescriptions", icon: <ClipboardList className="h-5 w-5" /> },
       { name: "Leave Management", href: "/doctor/leave", icon: <Calendar className="h-5 w-5" /> },
     ],
     admin: [
@@ -146,14 +145,14 @@ export function Header({ userType, userName = "User" }: HeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
+          {/* <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             {notificationCount > 0 && (
               <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
                 {notificationCount}
               </span>
             )}
-          </Button>
+          </Button> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
