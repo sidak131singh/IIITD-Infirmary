@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: appointmentId } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -17,8 +18,6 @@ export async function GET(
     if (session.user.role !== 'DOCTOR') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
-
-    const appointmentId = params.id
 
     const appointment = await prisma.appointment.findUnique({
       where: {

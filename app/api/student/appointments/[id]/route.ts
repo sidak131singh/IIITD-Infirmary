@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // GET - Fetch a specific appointment
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -21,7 +22,7 @@ export async function GET(
 
     const appointment = await prisma.appointment.findUnique({
       where: {
-        id: params.id
+        id
       },
       include: {
         doctor: {
@@ -60,9 +61,10 @@ export async function GET(
 // PATCH - Update appointment (for cancellation)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -86,7 +88,7 @@ export async function PATCH(
 
     // Check if appointment exists
     const existingAppointment = await prisma.appointment.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingAppointment) {
@@ -123,7 +125,7 @@ export async function PATCH(
 
     // Update appointment status
     const appointment = await prisma.appointment.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: 'CANCELLED' },
       include: {
         doctor: {
@@ -153,9 +155,10 @@ export async function PATCH(
 // DELETE - Delete appointment (alternative to cancellation)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -168,7 +171,7 @@ export async function DELETE(
 
     // Check if appointment exists
     const existingAppointment = await prisma.appointment.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingAppointment) {
@@ -190,7 +193,7 @@ export async function DELETE(
 
     // Delete the appointment
     await prisma.appointment.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({

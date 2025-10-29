@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // PATCH - Update appointment status (admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
@@ -33,7 +34,7 @@ export async function PATCH(
 
     // Check if appointment exists
     const existingAppointment = await prisma.appointment.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingAppointment) {
@@ -42,7 +43,7 @@ export async function PATCH(
 
     // Update appointment status
     const appointment = await prisma.appointment.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
       include: {
         student: {
