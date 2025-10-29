@@ -33,7 +33,16 @@ export function withAuth(allowedRoles?: string[]) {
           req
         )
         
-        return await handler(req, session, context)
+        // Resolve params if it's a Promise (Next.js 15+)
+        let resolvedContext = context
+        if (context?.params && typeof context.params.then === 'function') {
+          resolvedContext = {
+            ...context,
+            params: await context.params
+          }
+        }
+        
+        return await handler(req, session, resolvedContext)
       } catch (error) {
         console.error("Auth middleware error:", error)
         return NextResponse.json(
